@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Create an order</title>
+
+		<script defer src="/__/firebase/11.10.0/firebase-app-compat.js"></script>
+
+		<script defer src="/__/firebase/11.10.0/firebase-functions-compat.js"></script>
+		<script defer src="/__/firebase/init.js?useEmulator=true"></script>
+	</head>
+	<body>
+		
+		
+    <form id="orderForm">
+    <table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+      <tr>
+      <th>Item</th>
+      <th>Quantity</th>
+      <th>Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+      <td>Apples</td>
+      <td>3</td>
+      <td>1.50</td>
+      </tr>
+      <tr>
+      <td>Bread</td>
+      <td>2</td>
+      <td>2.99</td>
+      </tr>
+      <tr>
+      <td>Milk</td>
+      <td>1</td>
+      <td>3.25</td>
+      </tr>
+      <tr>
+      <td>Eggs</td>
+      <td>2</td>
+      <td>2.75</td>
+      </tr>
+    </tbody>
+    </table>
+    <button type="submit">Create Order</button>
+    </form>
+    <div id="result"></div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        let app = firebase.app();
+
+        const form = document.getElementById('orderForm');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const rows = form.querySelectorAll('tbody tr');
+          const items = Array.from(rows).map(row => {
+            const cells = row.querySelectorAll('td');
+            return {
+              name: cells[0].textContent,
+              quantity: Number(cells[1].textContent),
+              price: Number(cells[2].textContent)
+            };
+          });
+
+          firebase.functions().httpsCallable('createOrder')({ items })
+            .then(res => {
+              resultDiv.textContent = 'Order result: ' + JSON.stringify(res.data);
+            })
+            .catch(err => {
+              console.log(err);
+              resultDiv.textContent = 'Error: ' + err.message;
+            });
+        });
+      });
+    </script>
+		</script>
+	</body>
+</html>
