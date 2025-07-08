@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Show users</title>
+
+		<script defer src="/__/firebase/11.10.0/firebase-app-compat.js"></script>
+
+		<script defer src="/__/firebase/11.10.0/firebase-auth-compat.js"></script>
+		<script defer src="/__/firebase/11.10.0/firebase-functions-compat.js"></script>
+		<script defer src="/__/firebase/init.js?useEmulator=true"></script>
+	</head>
+	<body>
+    <div id="app"></div>
+    <script>
+      // Firebase Auth and Functions references
+      let auth, functions;
+
+      // App state
+      let currentUser = null;
+      let users = [];
+      let errorMsg = '';
+
+      // Render function
+      function render() {
+        const app = document.getElementById('app');
+        if (!currentUser) {
+          app.innerHTML = `
+            <h2>Login</h2>
+            <form id="login-form">
+              <label>Email:<br><input type="email" id="email" required></label><br>
+              <label>Password:<br><input type="password" id="password" required minlength="6"></label><br>
+              <button type="submit">Login</button>
+            </form>
+            <div id="error" style="color:red;">${errorMsg}</div>
+          `;
+          document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            errorMsg = '';
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if (password.length < 6) {
+              errorMsg = 'Password must be at least 6 characters.';
+              render();
+              return;
+            }
+            try {
+              await auth.signInWithEmailAndPassword(email, password);
+            } catch (err) {
+              errorMsg = err.message;
+              render();
+            }
+          };
+        } else {
+          app.innerHTML = `
+            <div>
+              <button id="display-users">Display All Users</button>
+              <button id="logout">Logout</button>
+            </div>
+            <div id="error" style="color:red;">${errorMsg}</div>
+            <div id="users-table"></div>
+          `;
+          document.getElementById('display-users').onclick = async () => {
+            errorMsg = '';
+            try {
+              const displayAllUsers = functions.httpsCallable('displayAllUsers');
+              const result = await displayAllUsers();
+              users = result.data && Array.isArray(result.data) ? result.data : [];
+              render();
+            } catch (err) {
+              errorMsg = err.message || 'Failed to fetch users.';
+              users = [];
+              render();
+            }
+          };
+          document.getElementById('logout').onclick = async () => {
+            await auth.signOut();
+          };
+          if (users.length > 0) {
+            document.getElementById('users-table').innerHTML = `
+              <h3>All Users</h3>
+              <table border="1" cellpadding="5">
+                <tr><th>Email</th></tr>
+                ${users.map(u => `<tr><td>${u.email}</td></tr>`).join('')}
+              </table>
+            `;
+          }
+        }
+      }
+
+      // Wait for Firebase to initialize
+      window.addEventListener('DOMContentLoaded', () => {
+        // Wait for firebase to be available
+        const waitForFirebase = setInterval(() => {
+          if (window.firebase && window.firebase.auth && window.firebase.functions) {
+            clearInterval(waitForFirebase);
+            auth = firebase.auth();
+            functions = firebase.functions();
+            auth.onAuthStateChanged(user => {
+              currentUser = user;
+              users = [];
+              errorMsg = '';
+              render();
+            });
+            render();
+          }
+        }, 50);
+      });
+    </script>
+	</body>
+</html>
