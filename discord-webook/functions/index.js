@@ -15,12 +15,3 @@ to Discord Webhook.
 
 
 */
-
-exports.sendDiscordMessage = onRequest(async (req, res) => {
-	
-	await axios.post("https://discord.com/api/webhooks/1394011429568516267/Roi9DovOjTFeNL95_t3pbUmswdmB5sYTTq1Jo0t2YGVwC90kxGgoeE_5sMTEIPc7GeiF", {
-		content: req.body.message
-	});
-
-	res.send("Done");
-});

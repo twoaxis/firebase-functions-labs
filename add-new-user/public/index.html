@@ -3,19 +3,32 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Show users</title>
+		<title>Add new user</title>
 
-		<script defer src="/__/firebase/11.10.0/firebase-app-compat.js"></script>
+		<script defer src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
 
-		<script defer src="/__/firebase/11.10.0/firebase-auth-compat.js"></script>
-		<script defer src="/__/firebase/11.10.0/firebase-functions-compat.js"></script>
-		<script defer src="/__/firebase/init.js?useEmulator=true"></script>
+		<script defer src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
+		<script defer src="https://www.gstatic.com/firebasejs/11.10.0/firebase-functions-compat.js"></script>
 	</head>
 	<body>
     <div id="app"></div>
     <script>
-      // Firebase Auth and Functions references
-      let auth, functions;
+      document.addEventListener('DOMContentLoaded', () => {
+        // Initialize Firebase with fake options and use emulators (compat)
+      const firebaseConfig = {
+        apiKey: "fake-api-key",
+        authDomain: "fake-auth-domain",
+        projectId: "demo-twoaxis-lab",
+        appId: "fake-app-id"
+      };
+      firebase.initializeApp(firebaseConfig);
+
+      let auth = firebase.auth();
+      let functions = firebase.functions();
+
+      // Use emulators
+      auth.useEmulator('http://localhost:9099/');
+      functions.useEmulator('localhost', 5001);
 
       // App state
       let currentUser = null;
@@ -110,6 +123,8 @@
         render();
         }
       }, 50);
+      });
+
       });
     </script>
 	</body>
